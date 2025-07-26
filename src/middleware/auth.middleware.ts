@@ -14,6 +14,7 @@ declare module "express-serve-static-core" {
 export const verifyJWT = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.accessToken || req.body?.accessToken;
+    console.log("token", token);
 
     if (!process.env.ACCESS_TOKEN_SECRET) {
       console.error("ACCESS_TOKEN_SECRET is missing!");
