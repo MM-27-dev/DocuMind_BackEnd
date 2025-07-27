@@ -8,7 +8,6 @@ import { addRAGBuilderJob } from "../connectors/RAGBuilderQueue";
 
 const router = Router();
 
-// // Apply authentication middleware to all routes
 router.use(verifyJWT);
 
 // Upload a new document
@@ -70,7 +69,6 @@ router.get(
     if (!file) {
       throw new ApiError(404, "File not found");
     }
-
     res
       .status(200)
       .json(new ApiResponse(200, file, "File retrieved successfully"));
@@ -89,7 +87,6 @@ router.delete(
     if (!file) {
       throw new ApiError(404, "File not found");
     }
-
     res.status(200).json(new ApiResponse(200, {}, "File deleted successfully"));
   })
 );
@@ -111,7 +108,6 @@ router.post(
       throw new ApiError(400, "Only failed files can be retried");
     }
 
-    // Update status to pending and add to queue
     await Files.findByIdAndUpdate(fileId, { processingStatus: "pending" });
     await addRAGBuilderJob({ jobId: fileId });
 

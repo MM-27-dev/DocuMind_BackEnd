@@ -1,49 +1,55 @@
 import IORedis from "ioredis";
+
 let redisClient: IORedis | null = null;
 
+// Connect to Redis
 export const connectToRedis = async (): Promise<IORedis> => {
   if (!redisClient) {
     redisClient = new IORedis({
       host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT || "6379"),
+      port: parseInt(process.env.REDIS_PORT || "6379", 10),
       password: process.env.REDIS_PASSWORD,
       tls:
         process.env.REDIS_USE_TLS === "true"
           ? {
-              rejectUnauthorized: false, // Only use this in development
+              rejectUnauthorized: false, // Use this only in development
             }
           : undefined,
       retryStrategy: (times: number) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
+        // Wait a bit before trying again if connection fails
+        return Math.min(times * 50, 2000);
       },
-      maxRetriesPerRequest: null, // BullMQ requirement
+      maxRetriesPerRequest: null, // Needed for BullMQ
     });
 
+    // When Redis is connected
     redisClient.on("connect", () => {
-      console.info("Connected to redis");
+      console.info("Connected to Redis.");
     });
 
+    // When there's a connection error
     redisClient.on("error", (err) => {
-      console.error(`Error in connecting to redis ${err}`);
+      console.error("Redis connection error:", err);
     });
 
+    // When Redis is trying to reconnect
     redisClient.on("reconnecting", () => {
-      console.info("Reconnecting to redis...");
+      console.info("Trying to reconnect to Redis...");
     });
   }
 
-  // Check if redis is connected
+  // Check if Redis is working
   try {
     await redisClient.ping();
   } catch (err: any) {
     redisClient.disconnect();
-    throw new Error(`Error in connecting to redis: ${err.message}`);
+    throw new Error(`Could not connect to Redis: ${err.message}`);
   }
 
   return redisClient;
 };
 
+// Get the Redis client, or connect if not already connected
 export const getRedisClient = async (): Promise<IORedis> => {
   if (!redisClient) {
     redisClient = await connectToRedis();
@@ -51,9 +57,11 @@ export const getRedisClient = async (): Promise<IORedis> => {
   return redisClient;
 };
 
+// Close the Redis connection
 export const closeRedisConnection = async (): Promise<void> => {
   if (redisClient) {
     await redisClient.quit();
     redisClient = null;
+    console.info("Redis connection closed.");
   }
 };

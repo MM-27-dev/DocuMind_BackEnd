@@ -14,7 +14,6 @@ export const extractRemoteFileContent = async (
     } else if (mimetype.startsWith("text/")) {
       return buffer.toString("utf8");
     } else {
-      // Optionally add more types (images, audio, etc.)
       console.error("Unsupported remote file type:", mimetype);
       return false;
     }

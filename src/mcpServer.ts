@@ -1,4 +1,3 @@
-// NOTE: If you see import errors for @modelcontextprotocol/sdk, ensure the package is installed and your tsconfig is set up for node module resolution.
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -13,7 +12,7 @@ import { queryVectors } from "./connectors/pinecone";
 import express from "express";
 import bodyParser from "body-parser";
 
-const DEFAULT_INDEX = "documind"; // Change as needed
+const DEFAULT_INDEX = "documind"; 
 
 const server = new Server(
   { name: "rag-mcp-server", version: "1.0.0" },
@@ -70,7 +69,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   throw new McpError(ErrorCode.InternalError, "Tool not found");
 });
 
-// Start server in an async IIFE for top-level await compatibility
+// Start server
 (async () => {
   const transport = new StdioServerTransport();
   await server.connect(transport);

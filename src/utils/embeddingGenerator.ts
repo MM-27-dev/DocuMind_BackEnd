@@ -23,9 +23,7 @@ const DEFAULT_EMBEDDING_OPTIONS: Required<EmbeddingOptions> = {
   retryDelay: 1000,
 };
 
-/**
- * Generate embeddings for a single text
- */
+// Generate embeddings for a single text
 export const generateEmbedding = async (
   text: string,
   options: EmbeddingOptions = {}

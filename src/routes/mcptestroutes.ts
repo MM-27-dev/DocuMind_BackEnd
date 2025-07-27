@@ -4,12 +4,12 @@ import generateRAGResponse from "../utils/generateRAGResponse";
 
 const router = Router();
 
-// Simple GET / for test
+// Test MCP route
 router.get("/", (req, res) => {
   res.json({ message: "MCP test route is working!" });
 });
 
-// POST /rag - test RAG response
+// RAG route
 router.post("/rag", async (req, res) => {
   const { userQuestion, prompt } = req.body;
   if (!userQuestion || !prompt) {

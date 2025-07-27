@@ -11,19 +11,26 @@ let ragBuilderQueue: Queue | null = null;
 export interface RAGBuilderJobData {
   jobId: string;
   retryCount?: number;
+  data?: {
+    email: string;
+    fileName: string;
+    content: string;
+    fileId?: string;
+    mimeType?: string;
+    source?: "google-drive" | "local";
+  };
 }
 
+// Initialize the RAG Builder queue
 export const initializeRAGBuilderQueue = async (): Promise<Queue> => {
   if (!RAGBuilderQueueName) {
-    console.error(
-      "RAG_BUILDER_QUEUE_NAME is not set in the environment variables"
-    );
+    console.error("Missing RAG_BUILDER_QUEUE_NAME in environment variables.");
     process.exit(1);
   }
 
   const redisClient = await getRedisClient();
 
-  ragBuilderQueue = new Queue(RAGBuilderQueueName as string, {
+  ragBuilderQueue = new Queue(RAGBuilderQueueName, {
     connection: redisClient,
     defaultJobOptions: {
       attempts: 3,
@@ -35,29 +42,33 @@ export const initializeRAGBuilderQueue = async (): Promise<Queue> => {
       removeOnFail: { count: 50 },
     },
   });
-  console.info("RAG builder queue initialized successfully");
+
+  console.info("RAG builder queue initialized.");
   return ragBuilderQueue;
 };
+
 // Add a job to the RAG builder queue
 export const addRAGBuilderJob = async (
   jobData: RAGBuilderJobData
 ): Promise<void> => {
   try {
-    console.debug("🔍 [RAGQueue] Adding job:", jobData);
+    console.debug("[RAGQueue] Adding job:", jobData);
+
     const queue = await initializeRAGBuilderQueue();
-    console.debug("🔍 [RAGQueue] Queue initialized successfully");
+
     await queue.add("process-rag-assistant", jobData, {
       priority: 1,
       jobId: `rag-assistant-${jobData.jobId}-${Date.now()}`,
     });
-    console.info(`Added RAG builder job for assistant ${jobData.jobId}`);
+
+    console.info(`Job added to RAG builder queue: ${jobData.jobId}`);
   } catch (error: any) {
-    console.error(`Failed to add RAG builder job: ${error.message}`);
+    console.error(`Failed to add job to RAG builder queue: ${error.message}`);
     throw error;
   }
 };
 
-// Get the status of the RAG builder queue
+// Retrieve the current status of the queue
 export const getRAGBuilderQueueStatus = async (): Promise<{
   waiting: number;
   active: number;
@@ -65,20 +76,15 @@ export const getRAGBuilderQueueStatus = async (): Promise<{
   failed: number;
 }> => {
   try {
-    console.debug("🔍 [RAGQueue] Getting queue status...");
     const queue = await initializeRAGBuilderQueue();
+
     const [waiting, active, completed, failed] = await Promise.all([
       queue.getWaiting(),
       queue.getActive(),
       queue.getCompleted(),
       queue.getFailed(),
     ]);
-    console.debug("🔍 [RAGQueue] Status:", {
-      waiting: waiting.length,
-      active: active.length,
-      completed: completed.length,
-      failed: failed.length,
-    });
+
     return {
       waiting: waiting.length,
       active: active.length,
@@ -86,51 +92,47 @@ export const getRAGBuilderQueueStatus = async (): Promise<{
       failed: failed.length,
     };
   } catch (error: any) {
-    console.error(`Failed to get RAG builder queue status: ${error.message}`);
+    console.error(`Failed to get queue status: ${error.message}`);
     throw error;
   }
 };
 
-// Clean up the RAG builder queue
+// Clean up and close the queue connection
 export const cleanupRAGBuilderQueue = async (): Promise<void> => {
   if (ragBuilderQueue) {
-    console.debug("🔍 [RAGQueue] Cleaning up queue...");
     await ragBuilderQueue.close();
     ragBuilderQueue = null;
-    console.info("RAG builder queue cleaned up successfully");
+    console.info("RAG builder queue connection closed.");
   }
 };
 
-// Get a specific RAG builder job
+// Fetch a specific job by its ID
 export const getRAGBuilderJob = async (jobId: string): Promise<any> => {
   try {
-    console.debug(`🔍 [RAGQueue] Getting job: ${jobId}`);
     const queue = await initializeRAGBuilderQueue();
     const job = await queue.getJob(jobId);
-    console.debug("🔍 [RAGQueue] Job result:", job);
+
     return job;
   } catch (error: any) {
-    console.error(`Failed to get RAG builder job ${jobId}: ${error.message}`);
+    console.error(`Failed to fetch job ${jobId}: ${error.message}`);
     throw error;
   }
 };
 
-// Remove a specific RAG builder job
+// Remove a job from the queue using its ID
 export const removeRAGBuilderJob = async (jobId: string): Promise<void> => {
   try {
-    console.debug(`🔍 [RAGQueue] Removing job: ${jobId}`);
     const queue = await initializeRAGBuilderQueue();
     const job = await queue.getJob(jobId);
+
     if (job) {
       await job.remove();
-      console.info(`Removed RAG builder job ${jobId}`);
+      console.info(`Job removed from RAG builder queue: ${jobId}`);
     } else {
-      console.warn(`RAG builder job ${jobId} not found`);
+      console.warn(`No job found with ID: ${jobId}`);
     }
   } catch (error: any) {
-    console.error(
-      `Failed to remove RAG builder job ${jobId}: ${error.message}`
-    );
+    console.error(`Failed to remove job ${jobId}: ${error.message}`);
     throw error;
   }
 };
