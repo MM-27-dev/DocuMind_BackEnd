@@ -9,7 +9,7 @@ import {
   ingestMultipleDocuments,
 } from "../utils/ingestPipeline";
 import multer from "multer";
-const upload = multer(); 
+const upload = multer();
 
 dotenv.config();
 
@@ -18,12 +18,15 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.GOOGLE_REDIRECT_URI ||
-    "http://localhost:3000/api/google-drive/auth/google/callback"
+  "http://localhost:3000/api/google-drive/auth/google/callback"
 );
 
+console.log("Google redirect URL", process.env.GOOGLE_REDIRECT_URI);
+
+
 const SCOPES = [
-  "https://www.googleapis.com/auth/drive.metadata.readonly", 
-  "https://www.googleapis.com/auth/drive.readonly", 
+  "https://www.googleapis.com/auth/drive.metadata.readonly",
+  "https://www.googleapis.com/auth/drive.readonly",
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
 ];
