@@ -14,7 +14,7 @@ declare module "express-serve-static-core" {
 export const verifyJWT = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.accessToken || req.body?.accessToken;
-
+    
     if (!process.env.ACCESS_TOKEN_SECRET) {
       console.error("ACCESS_TOKEN_SECRET is missing!");
       throw new ApiError(500, "Internal server error");
@@ -29,6 +29,8 @@ export const verifyJWT = asyncHandler(
         token,
         process.env.ACCESS_TOKEN_SECRET
       ) as JwtPayload;
+
+      console.log("Verified token:", decodedToken);
 
       const user = await User.findById(decodedToken._id).select(
         "-password -refreshToken"
