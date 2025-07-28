@@ -68,7 +68,7 @@ googleDriveApis.get("/auth/google/callback", async (req, res) => {
     //Save tokens to DB
     await saveTokensToDB({ email, tokens });
 
-    res.redirect("http://localhost:5173");
+    res.redirect("https://docu-mind-front-end.vercel.app");
   } catch (error) {
     console.error("Google Drive OAuth error:", error);
     res.status(500).send("Google Drive authentication failed.");

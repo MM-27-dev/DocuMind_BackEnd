@@ -14,7 +14,7 @@ dotenv.config();
 const app: Application = express();
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: ["http://localhost:5173", "http://localhost:5174", "https://docu-mind-front-end.vercel.app"],
   credentials: true,
 };
 app.use(cookieParser());
