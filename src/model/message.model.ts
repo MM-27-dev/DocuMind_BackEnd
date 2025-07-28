@@ -12,6 +12,7 @@ export interface IMessage extends Document {
     path: string;
     content: string;
   };
+  feedback?: "like" | "dislike"; 
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +48,11 @@ const messageSchema = new Schema<IMessage>(
       path: String,
       content: String,
     },
+    feedback: {
+      type: String,
+      enum: ["like", "dislike", null],
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -55,5 +61,7 @@ const messageSchema = new Schema<IMessage>(
 
 messageSchema.index({ sessionId: 1, createdAt: 1 });
 messageSchema.index({ userId: 1, createdAt: -1 });
+messageSchema.index({ feedback: 1 });
+
 
 export const Message = mongoose.model<IMessage>("Message", messageSchema);

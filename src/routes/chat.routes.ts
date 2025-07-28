@@ -7,6 +7,7 @@ import {
   sendMessage,
   generateSessiontitle,
   deleteSession,
+  giveFeedback,
 } from "../controllers/chat.controllers";
 
 const router = express.Router();
@@ -24,5 +25,8 @@ router.post("/sessions/:sessionId/messages/send", sendMessage);
 
 // Session management
 router.post("/sessions/:sessionId/generate-title", generateSessiontitle);
+
+router.patch("/messages/:messageId/feedback", giveFeedback);
+
 
 export default router;

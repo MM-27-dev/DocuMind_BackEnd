@@ -220,3 +220,36 @@ export const deleteSession = async (req: Request, res: Response) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+//give fedback of the response
+export const giveFeedback = async (req: Request, res: Response) => {
+  try {
+    const { messageId } = req.params;
+    const { feedback } = req.body;
+
+    if (!["like", "dislike"].includes(feedback)) {
+      return res.status(400).json({ error: "Invalid feedback type" });
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // Ensure user owns the message session
+    const session = await Session.findById(message.sessionId);
+    if (!session || session.userId.toString() !== (req as any).user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    message.feedback = feedback;
+    await message.save();
+
+    return res.status(200).json({ message: "Feedback saved", feedback });
+  } catch (err: any) {
+    console.error("Error in giveFeedback:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
