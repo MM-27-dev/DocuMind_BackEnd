@@ -133,7 +133,7 @@ export const sendMessage = async (req: Request, res: Response) => {
   }
 };
 
-// generate session title
+
 // Generate a title for the session using the conversation history
 export const generateSessiontitle = async (
   req: Request,
